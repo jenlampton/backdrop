@@ -698,18 +698,42 @@ class BlockHTMLIdTestCase extends BackdropWebTestCase {
   }
 }
 
-
 /**
  * Unit tests for template_preprocess_block().
  */
 class BlockTemplateSuggestionsUnitTest extends BackdropUnitTestCase {
   /**
-   * Test if template_preprocess_block() handles the suggestions right.
+   * Tests block classes with template_preprocess_block().
+   */
+  function testBlockClasses() {
+    drupal_load('module', 'block');
+
+    $block = new stdClass();
+    $block->module = 'block';
+    $block->delta = 'hyphen-test';
+    $variables = array();
+    $variables['elements']['#block'] = $block;
+    $variables['elements']['#children'] = '';
+    // Test adding a class to the block content.
+    $variables['content_attributes_array']['class'][] = 'test-class';
+    template_preprocess_block($variables);
+    // Test that the default class and added class are available.
+    $this->assertEqual($variables['content_attributes_array']['class'], array('test-class', 'content'), 'Default .content class added to block content_attributes_array');
+  }
+}
+
+/**
+ * Unit tests for block_theme_suggestions_block().
+ */
+class BlockTemplateSuggestionsUnitTest extends DrupalUnitTestCase {
+
+  /**
+   * Tests template suggestions from block_theme_suggestions_block().
    */
   function testBlockThemeHookSuggestions() {
     backdrop_load('module', 'block');
 
-    // Define block delta with underscore to be preprocessed
+    // Define block delta with underscore.
     $block1 = new stdClass();
     $block1->module = 'block';
     $block1->delta = 'underscore_test';
@@ -717,8 +741,8 @@ class BlockTemplateSuggestionsUnitTest extends BackdropUnitTestCase {
     $variables1 = array();
     $variables1['elements']['#block'] = $block1;
     $variables1['elements']['#children'] = '';
-    template_preprocess_block($variables1);
-    $this->assertEqual($variables1['theme_hook_suggestions'], array('block__block', 'block__block__underscore_test'), 'Found expected block suggestions for delta with underscore');
+    $suggestions = block_theme_suggestions_block($variables);
+    $this->assertEqual($suggestions, array('block__footer', 'block__block', 'block__block__underscore_test'), 'Found expected block suggestions for delta with underscore');
 
     // Define block delta with hyphens to be preprocessed. Hyphens should be
     // replaced with underscores.

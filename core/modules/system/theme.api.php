@@ -94,13 +94,13 @@ function hook_form_system_theme_settings_alter(&$form, &$form_state) {
 }
 
 /**
- * Preprocess theme variables for templates.
+ * Prepares theme variables for templates.
  *
- * This hook allows modules to preprocess theme variables for theme templates.
- * It is called for all theme hooks implemented as templates, but not for theme
- * hooks implemented as functions. hook_preprocess_HOOK() can be used to
- * preprocess variables for a specific theme hook, whether implemented as a
- * template or function.
+ * This hook allows modules to prepare variables for theme templates. It is
+ * called for all theme hooks implemented as templates, but not for theme hooks
+ * implemented as functions. hook_preprocess_HOOK() can be used to prepare
+ * variables for a specific theme hook, whether implemented as a template or
+ * function.
  *
  * For more detailed information, see theme().
  *
@@ -144,9 +144,9 @@ function hook_preprocess(&$variables, $hook) {
 }
 
 /**
- * Preprocess theme variables for a specific theme hook.
+ * Prepares theme variables for a specific theme hook.
  *
- * This hook allows modules to preprocess theme variables for a specific theme
+ * This hook allows modules to prepare theme variables for a specific theme
  * hook. It should only be used if a module needs to override or add to the
  * theme preprocessing for a theme hook it didn't define.
  *
@@ -199,6 +199,67 @@ function hook_process_HOOK(&$variables) {
   //   example might be tough, since the intent is for nearly everything to be
   //   achievable via preprocess functions, and for process functions to only be
   //   used when requiring the later execution time.
+}
+
+/**
+ * Provides alternate named suggestions for a specific theme hook.
+ *
+ * This hook allows the module implementing hook_theme() for a theme hook to
+ * provide alternative theme function or template name suggestions. This hook is
+ * only invoked for the first module implementing hook_theme() for a theme hook.
+ *
+ * HOOK is the least-specific version of the hook being called. For example, if
+ * '#theme' => 'node__article' is called, then node_theme_suggestions_node()
+ * will be invoked, not node_theme_suggestions_node__article(). The specific
+ * hook called (in this case 'node__article') is available in
+ * $variables['theme_hook_original'].
+ *
+ * @todo Add @code sample.
+ *
+ * @param array $variables
+ *   An array of variables passed to the theme hook. Note that this hook is
+ *   invoked before any preprocessing.
+ *
+ * @return array
+ *   An array of theme suggestions.
+ *
+ * @see hook_theme_suggestions_HOOK_alter()
+ */
+function hook_theme_suggestions_HOOK(array $variables) {
+  $suggestions = array();
+
+  $suggestions[] = 'node__' . $variables['elements']['#langcode'];
+
+  return $suggestions;
+}
+
+/**
+ * Alters named suggestions for a specific theme hook.
+ *
+ * This hook allows any module or theme to provide altenative theme function or
+ * template name suggestions and reorder or remove suggestions provided by
+ * hook_theme_suggestions_HOOK() or by earlier invocations of this hook.
+ *
+ * HOOK is the least-specific version of the hook being called. For example, if
+ * '#theme' => 'node__article' is called, then node_theme_suggestions_node()
+ * will be invoked, not node_theme_suggestions_node__article(). The specific
+ * hook called (in this case 'node__article') is available in
+ * $variables['theme_hook_original'].
+ *
+ * @todo Add @code sample.
+ *
+ * @param array $suggestions
+ *   An array of theme suggestions.
+ * @param array $variables
+ *   An array of variables passed to the theme hook. Note that this hook is
+ *   invoked before any preprocessing.
+ *
+ * @see hook_theme_suggestions_HOOK()
+ */
+function hook_theme_suggestions_HOOK_alter(array &$suggestions, array $variables) {
+  if (empty($variables['header'])) {
+    $suggestions[] = 'hookname__' . 'no_header';
+  }
 }
 
 /**

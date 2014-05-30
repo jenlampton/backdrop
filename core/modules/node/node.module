@@ -1229,7 +1229,21 @@ function node_preprocess_block(&$variables) {
 }
 
 /**
- * Processes variables for node.tpl.php.
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function node_theme_suggestions_node(array $variables) {
+  $suggestions = array();
+  $node = $variables['elements']['#node'];
+
+  $suggestions[] = 'node__' . $node->bundle();
+  $suggestions[] = 'node__' . $node->id();
+
+  return $suggestions;
+}
+
+
+/**
+ * Prepares variables for node.tpl.php.
  *
  * Most themes utilize their own copy of node.tpl.php. The default is located
  * inside "modules/node/node.tpl.php". Look in there for the full list of
@@ -1308,10 +1322,6 @@ function template_preprocess_node(&$variables) {
   if (isset($variables['preview'])) {
     $variables['classes_array'][] = 'preview';
   }
-
-  // Clean up name so there are no underscores.
-  $variables['theme_hook_suggestions'][] = 'node__' . $node->type;
-  $variables['theme_hook_suggestions'][] = 'node__' . $node->nid;
 }
 
 /**

@@ -40,9 +40,15 @@ description = Test block HTML id validity.
 group = Block
 file = block.test
 
+[BlockPreprocessUnitTest]
+name = Block preprocess
+description = Test the template_preprocess_block() function.
+group = Block
+file = block.test
+
 [BlockTemplateSuggestionsUnitTest]
 name = Block template suggestions
-description = Test the template_preprocess_block() function.
+description = Test the block_theme_suggestions_block() function.
 group = Block
 file = block.test
 

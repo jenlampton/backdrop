@@ -1,0 +1,6 @@
+name = "Theme suggestions test"
+description = "Support module for testing theme suggestions."
+package = Testing
+version = BACKDROP_VERSION
+backdrop = 1.x
+hidden = TRUE

@@ -1090,6 +1090,12 @@ description = Tests common theme functions.
 group = Theme
 file = tests/theme.test
 
+[ThemeSuggestionsAlterTest]
+name = Theme suggestions alter
+description = Test theme suggestion alter hooks.
+group = Theme
+file = tests/theme.test
+
 [ThemeHookInitUnitTest]
 name = Theme initialization in hook_init()
 description = Tests that the theme system can be correctly initialized in hook_init().

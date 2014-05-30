@@ -314,8 +314,23 @@ function views_plugin_list() {
  * The 'modules/node.views.inc' file is a better place for this, but
  * we haven't got a chance to load that file before Backdrop builds the
  * node portion of the theme registry.
+ *
+ * Implements hook_theme_suggestions_HOOK_alter().
  */
-function views_preprocess_node(&$vars) {
+function views_theme_suggestions_node_alter(array &$suggestions, array $variables) {
+  $node = $variables['elements']['#node'];
+  if (!empty($node->view) && $node->view->storage->id()) {
+    $suggestions[] = 'node__view__' . $node->view->storage->id();
+    if (!empty($node->view->current_display)) {
+      $suggestions[] = 'node__view__' . $node->view->storage->id() . '__' . $node->view->current_display;
+    }
+  }
+}
+
+/**
+ * Prepares variables for node.tpl.php.
+ */
+function views_preprocess_node(&$variables) {
   // The 'view' attribute of the node is added in views_preprocess_node()
   if (!empty($vars['node']->view) && !empty($vars['node']->view->name)) {
     $vars['view'] = $vars['node']->view;
@@ -332,23 +347,31 @@ function views_preprocess_node(&$vars) {
   }
 
   // Allow to alter comments and links based on the settings in the row plugin.
-  if (!empty($vars['view']->style_plugin->row_plugin) && get_class($vars['view']->style_plugin->row_plugin) == 'views_plugin_row_node_view') {
-    node_row_node_view_preprocess_node($vars);
+  if (!empty($variables['view']->style_plugin->row_plugin) && get_class($variables['view']->style_plugin->row_plugin) == 'views_plugin_row_node_view') {
+    node_row_node_view_preprocess_node($variables);
   }
 }
 
 /**
- * A theme preprocess function to automatically allow view-based node
- * templates if called from a view.
+ * Implements hook_theme_suggestions_HOOK_alter().
  */
-function views_preprocess_comment(&$vars) {
-  // The 'view' attribute of the node is added in template_preprocess_views_view_row_comment()
-  if (!empty($vars['node']->view) && !empty($vars['node']->view->name)) {
-    $vars['view'] = &$vars['node']->view;
-    $vars['theme_hook_suggestions'][] = 'comment__view__' . $vars['node']->view->name;
-    if (!empty($vars['node']->view->current_display)) {
-      $vars['theme_hook_suggestions'][] = 'comment__view__' . $vars['node']->view->name . '__' . $vars['node']->view->current_display;
+function views_theme_suggestions_comment_alter(array &$suggestions, array $variables) {
+  $comment = $variables['elements']['#comment'];
+  if (!empty($comment->view) && $comment->view->storage->id()) {
+    $suggestions[] = 'comment__view__' . $comment->view->storage->id();
+    if (!empty($comment->view->current_display)) {
+      $suggestions[] = 'comment__view__' . $comment->view->storage->id() . '__' . $comment->view->current_display;
     }
+  }
+}
+
+/**
+ * Prepares variables for comment.tpl.php.
+ */
+function views_preprocess_comment(&$variables) {
+  // The 'view' attribute of the node is added in template_preprocess_views_view_row_comment()
+  if (!empty($variables['node']->view) && !empty($variables['node']->view->name)) {
+    $variables['view'] = &$variables['node']->view;
   }
 }
 

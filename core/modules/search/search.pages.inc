@@ -69,13 +69,20 @@ function search_view($module = NULL, $keys = '') {
 }
 
 /**
- * Process variables for search-results.tpl.php.
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function search_theme_suggestions_search_results(array $variables) {
+  return array('search_results__' . $variables['plugin_id']);
+}
+
+/**
+ * Prepares variables for search-results.tpl.php.
  *
  * The $variables array contains the following arguments:
  * - $results: Search results array.
- * - $module: Module the search results came from (module implementing
- *   hook_search_info()).
+ * - $module: Module the search results came from.
  *
+ * @see hook_search_info()
  * @see search-results.tpl.php
  */
 function template_preprocess_search_results(&$variables) {
@@ -123,8 +130,7 @@ function template_preprocess_search_results(&$variables) {
       $variables['content_attributes_array']['lang'] = $result['language'];
     }
   }
-    $variables['pager'] = theme('pager', array('tags' => NULL));
-    $variables['theme_hook_suggestions'][] = 'search_results__' . $variables['module'];
+  $variables['pager'] = theme('pager', array('tags' => NULL));
 }
 
 /**

@@ -981,7 +981,23 @@ function field_extract_bundle($entity_type, $bundle) {
 }
 
 /**
- * Theme preprocess function for theme_field() and field.tpl.php.
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function field_theme_suggestions_field(array $variables) {
+  $suggestions = array();
+  $element = $variables['element'];
+
+  $suggestions[] = 'field__' . $element['#field_type'];
+  $suggestions[] = 'field__' . $element['#field_name'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#bundle'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#field_name'];
+  $suggestions[] = 'field__' . $element['#entity_type'] . '__' . $element['#field_name'] . '__' . $element['#bundle'];
+
+  return $suggestions;
+}
+
+/**
+ * Prepares variables for theme_field() and field.tpl.php.
  *
  * @see theme_field()
  * @see field.tpl.php
@@ -1026,14 +1042,6 @@ function template_preprocess_field(&$variables, $hook) {
   if ($element['#label_display'] == 'inline') {
     $variables['classes_array'][] = 'clearfix';
   }
-
-  // Add specific suggestions that can override the default implementation.
-  $variables['theme_hook_suggestions'] = array(
-    'field__' . $element['#field_type'],
-    'field__' . $element['#field_name'],
-    'field__' . $element['#bundle'],
-    'field__' . $element['#field_name'] . '__' . $element['#bundle'],
-  );
 }
 
 /**
