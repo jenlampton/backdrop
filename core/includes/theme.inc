@@ -1438,16 +1438,8 @@ function theme_get_setting($setting_name, $theme = NULL) {
 
   if (empty($cache[$theme])) {
     // Set the default values for each global setting.
-    // To add new global settings, add their default values below, and then
-    // add form elements to system_theme_settings() in system.admin.inc.
-    $cache[$theme] = array(
-      'default_logo'                     =>  1,
-      'logo_path'                        =>  '',
-      'default_favicon'                  =>  1,
-      'favicon_path'                     =>  '',
-      // Use the IANA-registered MIME type for ICO files as default.
-      'favicon_mimetype'                 =>  'image/vnd.microsoft.icon',
-    );
+    $cache[$theme] = array();
+
     // Turn on all default features.
     $features = _system_default_theme_features();
     foreach ($features as $feature) {
@@ -1489,40 +1481,6 @@ function theme_get_setting($setting_name, $theme = NULL) {
           if (!in_array($feature, $theme_object->info['features'])) {
             $cache[$theme]['toggle_' . $feature] = NULL;
           }
-        }
-      }
-
-      // Generate the path to the logo image.
-      if ($cache[$theme]['toggle_logo']) {
-        if ($cache[$theme]['default_logo']) {
-          if (file_exists($logo = dirname($theme_object->filename) . '/logo.png')) {
-            $cache[$theme]['logo'] = file_create_url($logo);
-          }
-          else {
-            $cache[$theme]['logo'] = '';
-            $cache[$theme]['toggle_logo'] = FALSE;
-          }
-        }
-        elseif ($cache[$theme]['logo_path']) {
-          $cache[$theme]['logo'] = file_create_url($cache[$theme]['logo_path']);
-        }
-      }
-
-      // Generate the path to the favicon.
-      if ($cache[$theme]['toggle_favicon']) {
-        if ($cache[$theme]['default_favicon']) {
-          if (file_exists($favicon = dirname($theme_object->filename) . '/favicon.ico')) {
-            $cache[$theme]['favicon'] = file_create_url($favicon);
-          }
-          else {
-            $cache[$theme]['favicon'] = file_create_url('core/misc/favicon.ico');
-          }
-        }
-        elseif ($cache[$theme]['favicon_path']) {
-          $cache[$theme]['favicon'] = file_create_url($cache[$theme]['favicon_path']);
-        }
-        else {
-          $cache[$theme]['toggle_favicon'] = FALSE;
         }
       }
     }
@@ -2643,10 +2601,8 @@ function template_preprocess_html(&$variables) {
   $variables['html_attributes_array']['dir'] = $GLOBALS['language_interface']->direction ? 'rtl' : 'ltr';
 
   // Add favicon.
-  if (theme_get_setting('toggle_favicon')) {
-    $favicon = theme_get_setting('favicon');
-    $type = theme_get_setting('favicon_mimetype');
-    backdrop_add_html_head_link(array('rel' => 'shortcut icon', 'href' => backdrop_strip_dangerous_protocols($favicon), 'type' => $type));
+  if ($favicon = backdrop_get_favicon()) {
+    backdrop_add_html_head_link(array('rel' => 'shortcut icon', 'href' => $favicon['path'], 'type' => $favicon['type']));
   }
 
   $site_config = config('system.site');
@@ -2714,7 +2670,7 @@ function template_preprocess_page(&$variables) {
   $variables['feed_icons']        = backdrop_get_feeds();
   $variables['language']          = $GLOBALS['language_interface'];
   $variables['language']->dir     = $GLOBALS['language_interface']->direction ? 'rtl' : 'ltr';
-  $variables['logo']              = theme_get_setting('logo');
+  $variables['logo']              = backdrop_get_logo();
   $variables['action_links']      = menu_local_actions();
   $variables['site_name']         = check_plain($site_config->get('site_name'));
   $variables['site_slogan']       = filter_xss_admin($site_config->get('site_slogan'));
@@ -2899,11 +2855,9 @@ function theme_get_suggestions($args, $base, $delimiter = '__') {
  * @see maintenance-page.tpl.php
  */
 function template_preprocess_maintenance_page(&$variables) {
-  // Add favicon
-  if (theme_get_setting('toggle_favicon')) {
-    $favicon = theme_get_setting('favicon');
-    $type = theme_get_setting('favicon_mimetype');
-    backdrop_add_html_head_link(array('rel' => 'shortcut icon', 'href' => backdrop_strip_dangerous_protocols($favicon), 'type' => $type));
+  // Add favicon.
+  if ($favicon = backdrop_get_favicon()) {
+    backdrop_add_html_head_link(array('rel' => 'shortcut icon', 'href' => $favicon['path'], 'type' => $favicon['type']));
   }
 
   global $theme;
@@ -2957,7 +2911,7 @@ function template_preprocess_maintenance_page(&$variables) {
   $variables['help']              = '';
   $variables['language']          = $language;
   $variables['language']->dir     = $language->direction ? 'rtl' : 'ltr';
-  $variables['logo']              = theme_get_setting('logo');
+  $variables['logo']              = backdrop_get_logo();
   $variables['messages']          = $variables['show_messages'] ? theme('status_messages') : '';
   $variables['main_menu']         = array();
   $variables['secondary_menu']    = array();

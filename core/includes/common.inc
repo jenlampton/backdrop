@@ -268,6 +268,71 @@ function backdrop_get_breadcrumb() {
 }
 
 /**
+ * Gets the site logo.
+ *
+ * @return (string) $logo
+ *   URL to the logo file to use for, or an empty string if not defined.
+ */
+function backdrop_get_logo() {
+  try {
+    $site_config = config('system.site');
+
+    if ($site_config->get('site_default_logo')) {
+      global $theme;
+      $theme_data = list_themes();
+      $theme_object = $theme_data[$theme];
+      if (file_exists($logo = dirname($theme_object->filename) . '/logo.png')) {
+        $logo = file_create_url($logo);
+      }
+    }
+    else if ($site_config->get('site_logo_path') != '') {
+      $logo = file_create_url($site_config->get('site_logo_path'));
+    }
+    else {
+      return '';
+    }
+  }
+  catch (ConfigException $e) {
+    return '';
+  }
+
+  return $logo;
+}
+
+/**
+ * Gets the favicon URL and mime type.
+ *
+ * @return (array) $favicon
+ *   Information about the favicon to use for the site. Keys include:
+ *   - path: URL to the file to be used.
+ *   - type: mime type for the icon being used.
+ */
+function backdrop_get_favicon() {
+  try {
+    $site_config = config('system.site');
+
+    if ($site_config->get('site_default_favicon') === 1) {
+      global $theme;
+      $theme_data = list_themes();
+      $theme_object = $theme_data[$theme];
+      if (file_exists($file = dirname($theme_object->filename) . '/favicon.ico')) {
+        $favicon['path'] = backdrop_strip_dangerous_protocols(file_create_url($file));
+        $favicon['type'] = 'image/vnd.microsoft.icon';
+      }
+    }
+    else {
+      $favicon['path'] = backdrop_strip_dangerous_protocols(file_create_url($site_config->get('site_favicon_path')));
+      $favicon['type'] = $site_config->get('site_favicon_type');
+    }
+  }
+  catch (ConfigException $e) {
+    return FALSE;
+  }
+
+  return $favicon;
+}
+
+/**
  * Adds output to the HEAD tag of the HTML page.
  *
  * This function can be called as long as the headers aren't sent. Pass no
