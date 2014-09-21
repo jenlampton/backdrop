@@ -72,7 +72,7 @@ function block_permission() {
  * Implements hook_menu().
  */
 function block_menu() {
-  $default_theme = variable_get('theme_default', 'stark');
+  $default_theme = variable_get('theme_default', 'seven');
   $items['admin/structure/block'] = array(
     'title' => 'Blocks',
     'description' => 'Configure what block content appears in your site\'s sidebars and other regions.',
@@ -275,7 +275,7 @@ function block_page_build(&$page) {
       $page['page_top']['backlink'] = array(
         '#type' => 'link',
         '#title' => t('Exit block region demonstration'),
-        '#href' => 'admin/structure/block' . (variable_get('theme_default', 'stark') == $theme ? '' : '/list/' . $theme),
+        '#href' => 'admin/structure/block' . (variable_get('theme_default', 'seven') == $theme ? '' : '/list/' . $theme),
         '#options' => array('attributes' => array('class' => array('block-demo-backlink'))),
         '#weight' => -10,
       );
@@ -640,7 +640,7 @@ function block_theme_initialize($theme) {
   // Initialize theme's blocks if none already registered.
   $has_blocks = (bool) db_query_range('SELECT 1 FROM {block} WHERE theme = :theme', 0, 1, array(':theme' => $theme))->fetchField();
   if (!$has_blocks) {
-    $default_theme = variable_get('theme_default', 'stark');
+    $default_theme = variable_get('theme_default', 'seven');
     // Apply only to new theme's visible regions.
     $regions = system_region_list($theme, REGIONS_VISIBLE);
     $result = db_query("SELECT * FROM {block} WHERE theme = :theme", array(':theme' => $default_theme), array('fetch' => PDO::FETCH_ASSOC));

@@ -452,8 +452,8 @@ function menu_test_theme_callback($argument) {
     return variable_get('admin_theme');
   }
   // Test using a theme that exists, but may or may not be enabled.
-  elseif ($argument == 'use-stark-theme') {
-    return 'stark';
+  elseif ($argument == 'use-seven-theme') {
+    return 'seven';
   }
   // Test using a theme that does not exist.
   elseif ($argument == 'use-fake-theme') {

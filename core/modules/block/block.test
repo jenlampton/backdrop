@@ -43,7 +43,7 @@ class BlockTestCase extends BackdropWebTestCase {
 
     // Confirm that hidden regions are not shown as options for block placement
     // when adding a new block.
-    theme_enable(array('stark'));
+    theme_enable(array('seven'));
     $themes = list_themes();
     $this->backdropGet('admin/structure/block/add');
     foreach ($themes as $key => $theme) {
@@ -419,76 +419,14 @@ class NonDefaultBlockAdmin extends BackdropWebTestCase {
   function testNonDefaultBlockAdmin() {
     $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer themes'));
     $this->backdropLogin($admin_user);
-    theme_enable(array('stark'));
-    $this->backdropGet('admin/structure/block/list/stark');
+    theme_enable(array('seven'));
+    $this->backdropGet('admin/structure/block/list/seven');
   }
 }
 
 /**
  * Test blocks correctly initialized when picking a new default theme.
  */
-class NewDefaultThemeBlocks extends BackdropWebTestCase {
-  /**
-   * Check the enabled Bartik blocks are correctly copied over.
-   */
-  function testNewDefaultThemeBlocks() {
-    // Create administrative user.
-    $admin_user = $this->backdropCreateUser(array('administer themes'));
-    $this->backdropLogin($admin_user);
-
-    // Ensure no other theme's blocks are in the block table yet.
-    $themes = array();
-    $themes['default'] = variable_get('theme_default', 'stark');
-    if ($admin_theme = variable_get('admin_theme')) {
-      $themes['admin'] = $admin_theme;
-    }
-    $count = db_query_range('SELECT 1 FROM {block} WHERE theme NOT IN (:themes)', 0, 1, array(':themes' => $themes))->fetchField();
-    $this->assertFalse($count, 'Only the default theme and the admin theme have blocks.');
-
-    // Populate list of all blocks for matching against new theme.
-    $blocks = array();
-    $result = db_query('SELECT * FROM {block} WHERE theme = :theme', array(':theme' => $themes['default']));
-    foreach ($result as $block) {
-      // $block->theme and $block->bid will not match, so remove them.
-      unset($block->theme, $block->bid);
-      $blocks[$block->module][$block->delta] = $block;
-    }
-
-    // Turn on the Stark theme and ensure that it contains all of the blocks
-    // the default theme had.
-    theme_enable(array('stark'));
-    variable_set('theme_default', 'stark');
-    $result = db_query('SELECT * FROM {block} WHERE theme = :theme', array(':theme' => 'stark'));
-    foreach ($result as $block) {
-      unset($block->theme, $block->bid);
-      $this->assertEqual($blocks[$block->module][$block->delta], $block, format_string('Block %name matched', array('%name' => $block->module . '-' . $block->delta)));
-    }
-  }
-}
-
-/**
- * Test the block system with admin themes.
- */
-class BlockAdminThemeTestCase extends BackdropWebTestCase {
-  /**
-   * Check for the accessibility of the admin theme on the  block admin page.
-   */
-  function testAdminTheme() {
-    // Create administrative user.
-    $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer themes'));
-    $this->backdropLogin($admin_user);
-
-    // Ensure that access to block admin page is denied when theme is disabled.
-    $this->backdropGet('admin/structure/block/list/stark');
-    $this->assertResponse(403, 'The block admin page for a disabled theme can not be accessed');
-
-    // Enable admin theme and confirm that tab is accessible.
-    $edit['admin_theme'] = 'stark';
-    $this->backdropPost('admin/appearance', $edit, 'Save configuration');
-    $this->backdropGet('admin/structure/block/list/stark');
-    $this->assertResponse(200, 'The block admin page for the admin theme can be accessed');
-  }
-}
 
 /**
  * Test block caching.
@@ -823,7 +761,7 @@ class BlockInvalidRegionTestCase extends BackdropWebTestCase {
       ->key(array(
         'module' => 'block_test',
         'delta' => 'test_html_id',
-        'theme' => variable_get('theme_default', 'stark'),
+        'theme' => variable_get('theme_default', 'seven'),
       ))
       ->fields(array(
         'status' => 1,
@@ -847,7 +785,7 @@ class BlockInvalidRegionTestCase extends BackdropWebTestCase {
       ->key(array(
         'module' => 'block_test',
         'delta' => 'test_html_id',
-        'theme' => variable_get('theme_default', 'stark'),
+        'theme' => variable_get('theme_default', 'seven'),
       ))
       ->fields(array(
         'region' => 'invalid_region',

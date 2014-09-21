@@ -563,7 +563,7 @@ function node_update_1002() {
  */
 function node_update_1022() {
   $types = db_query('SELECT type FROM {node_type}')->fetchCol();
-  $theme = variable_get('theme_default', 'stark');
+  $theme = variable_get('theme_default', 'seven');
   $comment_picture = theme_get_setting('toggle_comment_user_picture', $theme);
   $comment_picture = is_null($comment_picture) || $comment_picture;
   $node_picture = theme_get_setting('toggle_node_user_picture', $theme);

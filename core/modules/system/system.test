@@ -1309,7 +1309,7 @@ class SystemThemeFunctionalTest extends BackdropWebTestCase {
     // Specify a filesystem path to be used for the logo.
     $file = current($this->backdropGetTestFiles('image'));
     $file_relative = strtr($file->uri, array('public://' => variable_get('file_public_path', 'files') . '/'));
-    $default_theme_path = 'core/themes/stark';
+    $default_theme_path = 'core/themes/seven';
 
     $supported_paths = array(
       // Raw stream wrapper URI.
@@ -1441,8 +1441,8 @@ class SystemThemeFunctionalTest extends BackdropWebTestCase {
    * Test the administration theme functionality.
    */
   function testAdministrationTheme() {
-    theme_enable(array('stark'));
-    variable_set('theme_default', 'stark');
+    theme_enable(array('seven'));
+    variable_set('theme_default', 'seven');
     // Enable an administration theme and show it on the node admin pages.
     $edit = array(
       'admin_theme' => 'seven',
@@ -1454,7 +1454,7 @@ class SystemThemeFunctionalTest extends BackdropWebTestCase {
     $this->assertRaw('core/themes/seven', 'Administration theme used on an administration page.');
 
     $this->backdropGet('node/' . $this->node->nid);
-    $this->assertRaw('core/themes/stark', 'Site default theme used on node page.');
+    $this->assertRaw('core/themes/seven', 'Site default theme used on node page.');
 
     $this->backdropGet('node/add');
     $this->assertRaw('core/themes/seven', 'Administration theme used on the add content page.');
@@ -1472,7 +1472,7 @@ class SystemThemeFunctionalTest extends BackdropWebTestCase {
     $this->assertRaw('core/themes/seven', 'Administration theme used on an administration page.');
 
     $this->backdropGet('node/add');
-    $this->assertRaw('core/themes/stark', 'Site default theme used on the add content page.');
+    $this->assertRaw('core/themes/seven', 'Site default theme used on the add content page.');
 
     // Reset to the default theme settings.
     variable_set('theme_default', 'bartik');

@@ -95,7 +95,7 @@ function backdrop_theme_initialize() {
   $themes = list_themes();
 
   // Load the default theme, Stark.
-  $theme = variable_get('theme_default', 'stark');
+  $theme = variable_get('theme_default', 'seven');
 
   // Allow modules to override the theme. Validation has already been performed
   // inside menu_get_custom_theme(), so we do not need to check it again here.
@@ -1589,7 +1589,7 @@ function theme_enable($theme_list) {
  */
 function theme_disable($theme_list) {
   // Don't disable the default theme.
-  if ($pos = array_search(variable_get('theme_default', 'stark'), $theme_list) !== FALSE) {
+  if ($pos = array_search(variable_get('theme_default', 'seven'), $theme_list) !== FALSE) {
     unset($theme_list[$pos]);
     if (empty($theme_list)) {
       return;
