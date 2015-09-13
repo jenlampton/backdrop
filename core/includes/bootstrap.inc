@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Functions that need to be loaded on every Backdrop request.
