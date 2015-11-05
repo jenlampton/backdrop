@@ -108,23 +108,26 @@ function search_admin_settings($form, &$form_state) {
 
   $form['active'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Active search modules')
+    '#title' => t('Search pages')
   );
-  $module_options = _search_get_module_names();
+  $search_info = search_get_info(TRUE);
+  $module_options = array();
+  foreach ($search_info as $module => $info) {
+    $module_options[$module] = $info['title'];
+  }
   $form['active']['search_active_modules'] = array(
+    '#title' => t('Available search pages'),
     '#type' => 'checkboxes',
-    '#title' => t('Active modules'),
-    '#title_display' => 'invisible',
     '#default_value' => $config->get('search_active_modules'),
     '#options' => $module_options,
-    '#description' => t('Choose which search modules are active from the available modules.')
+    '#description' => t('Several modules provide pages where items can be searched, for example search/node and search/user. Use this setting to limit available pages.')
   );
   $form['active']['search_default_module'] = array(
-    '#title' => t('Default search module'),
+    '#title' => t('Default search page'),
     '#type' => 'radios',
     '#default_value' => $config->get('search_default_module'),
     '#options' => $module_options,
-    '#description' => t('Choose which search module is the default.')
+    '#description' => t('Only one search page can be used by default. The results from this page will appear at http://www.example.com/search.')
   );
   $form['#validate'][] = 'search_admin_settings_validate';
   $form['#submit'][] = 'search_admin_settings_submit';
