@@ -129,11 +129,102 @@ function taxonomy_form_vocabulary($form, &$form_state, TaxonomyVocabulary $vocab
     '#value' => '0',
   );
 
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'js' => array(backdrop_get_path('module', 'taxonomy') . '/js/taxonomy.vocabulary.js'),
+    ),
+  );
+
+  // Vocabulary permissions.
+  $form['permissions'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Permissions'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+    '#access' => user_access('administer permissions'),
+  );
+  $form['permissions']['permissions'] = taxonomy_vocabulary_form_permissions($vocabulary);
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
   );
+
+  return $form;
+}
+
+/**
+ * Builds a matrix of node permissions for this node type.
+ *
+ * @param $vocabulary
+ *   Fully loaded TaxonomyVocabulary object.
+ *
+ * @see taxonomy_form_vocabulary()
+ */
+function taxonomy_vocabulary_form_permissions($vocabulary) {
+  // Retrieve role names for columns.
+  $roles = user_roles(FALSE, NULL, TRUE);
+  $admin_role = config_get('system.core', 'user_admin_role');
+
+  // Note that in taxonomy_theme() the 'node_type_form_permissions' theme
+  // callback reuses theme_user_admin_permissions(), to make it identical to
+  // the user module permissions page.
+  $form['#theme'] = array('node_type_form_permissions');
+
+  // Wrap the table in a form element to make margins match other form elements.
+  $form['#theme_wrappers'] = array('form_element');
+
+  $form['roles'] = array(
+    '#type' => 'value',
+    '#value' => $roles,
+  );
+
+  // Render role/permission overview:
+  $options = array();
+
+  $permissions = taxonomy_vocabulary_list_permissions($vocabulary);
+
+  $status = array();
+  foreach ($permissions as $perm => $perm_item) {
+    // Fill in default values for the permission.
+    $perm_item += array(
+      'description' => '',
+      'restrict access' => FALSE,
+      'warning' => !empty($perm_item['restrict access']) ? t('Warning: Give to trusted roles only; this permission has security implications.') : '',
+    );
+    $options[$perm] = '';
+    $form['permission'][$perm] = array(
+      '#type' => 'item',
+      '#markup' => $perm_item['title'],
+      '#description' => theme('user_permission_description', array('permission_item' => $perm_item)),
+    );
+    foreach ($roles as $role_name => $role) {
+      // Builds arrays for checked boxes for each role. Always select the Admin
+      // role on new forms.
+      if (in_array($perm, $role->permissions) || (!$vocabulary->machine_name && $role->name == $admin_role)) {
+        $status[$role_name][] = $perm;
+      }
+    }
+  }
+
+  // Have to build checkboxes here after checkbox arrays are built.
+  foreach ($roles as $role_name => $role) {
+    $form['checkboxes'][$role_name] = array(
+      '#type' => 'checkboxes',
+      '#options' => $options,
+      '#default_value' => isset($status[$role_name]) ? $status[$role_name] : array(),
+      '#attributes' => array('class' => array('role-' . $role_name)),
+    );
+    $form['role_names'][$role_name] = array(
+      '#markup' => check_plain($role->label),
+      '#tree' => TRUE,
+    );
+  }
+
+  $form['#attached']['js'][] = backdrop_get_path('module', 'user') . '/js/user.permissions.js';
 
   return $form;
 }
