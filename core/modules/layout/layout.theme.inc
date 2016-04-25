@@ -137,6 +137,17 @@ function theme_layout_conditions($variables) {
 }
 
 /**
+ * Output region content wrapped by tag specified in layout UI.
+ */
+function theme_region_inner_wrapper($variables) {
+  $content = $variables['content'];
+  $tag = $variables['tag'];
+  $classes = $variables['classes'];
+
+  return '<' . $tag . ' class="' . $classes .'">' . $content . '</' . $tag . '>';
+}
+
+/**
  * Prepares variables for layout templates.
  *
  * This uses [module_name]_preprocess_layout() instead of

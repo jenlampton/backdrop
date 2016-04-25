@@ -265,7 +265,6 @@ class LayoutRendererStandard {
       'style' => !empty($settings['style']) ? $settings['style'] : 'default',
       'style settings' => isset($settings['style_settings']['default']) ? $settings['style_settings']['default'] : array(),
     );
-
     $regions = array();
     if (empty($settings)) {
       // No region settings exist, init all with the defaults.
@@ -281,18 +280,19 @@ class LayoutRendererStandard {
       }
     }
     else {
-      // @todo: Region style settings are not fully implemented yet.
       // Some settings exist; iterate through each region and set individually.
       foreach ($this->layout_info['regions'] as $region_id => $title) {
         // Ensure this region has at least an empty blocks array.
         $blocks = !empty($region_block_list[$region_id]) ? $region_block_list[$region_id] : array();
+
         if (empty($settings[$region_id]['style']) || $settings[$region_id]['style'] == -1) {
           $regions[$region_id] = $default;
         }
         else {
           $regions[$region_id]['style'] = $settings[$region_id]['style'];
-          $regions[$region_id]['style settings'] = isset($settings['style_settings'][$region_id]) ? $settings['style_settings'][$region_id] : array();
         }
+
+        $regions[$region_id]['style settings'] = isset($settings[$region_id]) ? $settings[$region_id] : array();
         $regions[$region_id]['uuids'] = $blocks;
       }
     }
@@ -530,11 +530,14 @@ class LayoutRendererStandard {
     $style_settings = $this->prepared['regions'][$region_id]['style settings'];
     $style = layout_get_style_info($style_name);
 
-    if ($style['region theme']) {
-      $output = theme($style['region theme'], array('layout' => $this->layout, 'blocks' => $blocks, 'settings' => $style_settings, 'style' => $style));
-    }
-    else {
-      $output = implode('', $blocks);
+    $output = implode('', $blocks);
+    if (isset($this->prepared['regions'][$region_id]['style settings']['element'])
+      && ($this->prepared['regions'][$region_id]['style settings']['element'] != '')) {
+dpm($output);
+      $wrapper_tag = $this->prepared['regions'][$region_id]['style settings']['element'];
+      $classes = $this->prepared['regions'][$region_id]['style settings']['classes'];
+      $output = theme('region_inner_wrapper', array('content' => $output, 'tag' => $wrapper_tag, 'classes' => $classes));
+dpm($output);
     }
 
     return $output;
