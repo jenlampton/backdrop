@@ -1645,11 +1645,6 @@ function node_menu() {
     'file' => 'node.types.inc',
   );
 
-  $items['node'] = array(
-    'page callback' => 'node_page_default',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
   $items['node/add'] = array(
     'title' => 'Add content',
     'page callback' => 'node_add_page',
@@ -1658,15 +1653,7 @@ function node_menu() {
     'menu_name' => 'management',
     'weight' => -20,
   );
-  $items['rss.xml'] = array(
-    'title' => 'RSS feed',
-    'page callback' => 'node_feed',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-    // Pass a FALSE and array argument to ensure that additional path components
-    // are not passed to node_feed().
-    'page arguments' => array(FALSE, array()),
-  );
+
   // @todo Remove this loop when we have a 'description callback' property.
   // Resets the internal static cache of _node_types_build() and forces a
   // rebuild of the node type information.
@@ -1953,96 +1940,6 @@ function node_get_recent($number = 10) {
 }
 
 /**
- * Page callback: Generates and prints an RSS feed.
- *
- * Generates an RSS feed from an array of node IDs, and prints it with an HTTP
- * header, with Content Type set to RSS/XML.
- *
- * @param $nids
- *   (optional) An array of node IDs (nid). Defaults to FALSE so empty feeds can
- *   be generated with passing an empty array, if no items are to be added
- *   to the feed.
- * @param $channel
- *   (optional) An associative array containing 'title', 'link', 'description',
- *   and other keys, to be parsed by format_rss_channel() and
- *   format_xml_elements(). A list of channel elements can be found at the
- *   @link http://cyber.law.harvard.edu/rss/rss.html RSS 2.0 Specification. @endlink
- *   The link should be an absolute URL.
- *
- * @see node_menu()
- */
-function node_feed($nids = FALSE, $channel = array()) {
-  global $base_url, $language_content;
-  $rss_config = config('system.core');
-
-  if ($nids === FALSE) {
-    $nids = db_select('node', 'n')
-      ->fields('n', array('nid', 'created'))
-      ->condition('n.promote', 1)
-      ->condition('n.status', 1)
-      ->orderBy('n.created', 'DESC')
-      ->range(0, $rss_config->get('rss_limit'))
-      ->addTag('node_access')
-      ->execute()
-      ->fetchCol();
-  }
-
-  $item_length = $rss_config->get('rss_viewmode');
-  $namespaces = array('xmlns:dc' => 'http://purl.org/dc/elements/1.1/');
-
-  // Load all nodes to be rendered.
-  $nodes = node_load_multiple($nids);
-  $items = '';
-  foreach ($nodes as $node) {
-    $item_text = '';
-
-    $node->link = url("node/$node->nid", array('absolute' => TRUE));
-    $node->rss_namespaces = array();
-    $account = user_load($node->uid);
-    $node->rss_elements = array(
-      array('key' => 'pubDate', 'value' => gmdate('r', $node->created)),
-      array('key' => 'dc:creator', 'value' => user_format_name($account)),
-      array('key' => 'guid', 'value' => $node->nid . ' at ' . $base_url, 'attributes' => array('isPermaLink' => 'false'))
-    );
-
-    // The node gets built and modules add to or modify $node->rss_elements
-    // and $node->rss_namespaces.
-    $build = node_view($node, 'rss');
-    unset($build['#theme']);
-
-    if (!empty($node->rss_namespaces)) {
-      $namespaces = array_merge($namespaces, $node->rss_namespaces);
-    }
-
-    if ($item_length != 'title') {
-      // We render node contents and force links to be last.
-      $build['links']['#weight'] = 1000;
-      $item_text .= backdrop_render($build);
-    }
-
-    $items .= format_rss_item($node->title, $node->link, $item_text, $node->rss_elements);
-  }
-
-  $channel_defaults = array(
-    'version'     => '2.0',
-    'title'       => config_get('system.core', 'site_name'),
-    'link'        => $base_url,
-    'description' => $rss_config->get('rss_description'),
-    'language'    => $language_content->langcode
-  );
-  $channel_extras = array_diff_key($channel, $channel_defaults);
-  $channel = array_merge($channel_defaults, $channel);
-
-  $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-  $output .= "<rss version=\"" . $channel["version"] . "\" xml:base=\"" . $base_url . "\" " . backdrop_attributes($namespaces) . ">\n";
-  $output .= format_rss_channel($channel['title'], $channel['link'], $channel['description'], $items, $channel['language'], $channel_extras);
-  $output .= "</rss>\n";
-
-  backdrop_add_http_header('Content-Type', 'application/rss+xml; charset=utf-8');
-  print $output;
-}
-
-/**
  * Constructs a backdrop_render() style array from an array of loaded nodes.
  *
  * @param $nodes
@@ -2079,62 +1976,6 @@ function node_view_multiple($nodes, $view_mode = 'teaser', $weight = 0, $langcod
   backdrop_sort($build['nodes'], array('#weight'));
   $build['nodes']['#sorted'] = TRUE;
 
-  return $build;
-}
-
-/**
- * Menu callback; Generate a listing of promoted nodes.
- *
- * @return array
- *   An array in the format expected by backdrop_render().
- *
- * @see node_menu()
- */
-function node_page_default() {
-  $site_config = config('system.core');
-  $select = db_select('node', 'n')
-    ->fields('n', array('nid', 'sticky', 'created'))
-    ->condition('n.promote', 1)
-    ->condition('n.status', 1)
-    ->orderBy('n.sticky', 'DESC')
-    ->orderBy('n.created', 'DESC')
-    ->extend('PagerDefault')
-    ->limit($site_config->get('default_nodes_main'))
-    ->addTag('node_access');
-
-  $nids = $select->execute()->fetchCol();
-
-  if (!empty($nids)) {
-    $nodes = node_load_multiple($nids);
-    $build = node_view_multiple($nodes);
-
-    // 'rss.xml' is a path, not a file, registered in node_menu().
-    backdrop_add_feed('rss.xml', $site_config->get('site_name') . ' ' . t('RSS'));
-    $build['pager'] = array(
-      '#theme' => 'pager',
-      '#weight' => 5,
-    );
-    backdrop_set_title('');
-  }
-  else {
-    backdrop_set_title(t('Welcome to @site-name', array('@site-name' => $site_config->get('site_name'))), PASS_THROUGH);
-
-    $default_message = '<p>' . t('No front page content has been created yet.') . '</p>';
-
-    $default_links = array();
-    if (_node_add_access()) {
-      $default_links[] = l(t('Add content'), 'node/add');
-    }
-    if (!empty($default_links)) {
-      $default_message .= theme('item_list', array('items' => $default_links));
-    }
-
-    $build['default_message'] = array(
-      '#markup' => $default_message,
-      '#prefix' => '<div id="first-time">',
-      '#suffix' => '</div>',
-    );
-  }
   return $build;
 }
 

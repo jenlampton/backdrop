@@ -1215,13 +1215,7 @@ function system_site_information_settings($form, &$form_state) {
     '#description' => t('Optionally, specify a relative URL to display as the front page.  Leave blank to display the default content feed.'),
     '#field_prefix' => url(NULL, array('absolute' => TRUE)) . (config_get('system.core', 'clean_url') ? '' : '?q='),
   );
-  $form['front_page']['default_nodes_main'] = array(
-    '#type' => 'select', '#title' => t('Number of posts on front page'),
-    '#default_value' => $site_config->get('default_nodes_main'),
-    '#options' => backdrop_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30)),
-    '#description' => t('The maximum number of posts displayed on overview pages such as the front page.'),
-    '#access' => (config_get('system.core', 'site_frontpage') == 'node'),
-  );
+
   $form['error_page'] = array(
     '#type' => 'fieldset',
     '#title' => t('Error pages'),
@@ -1905,24 +1899,6 @@ function system_rss_feeds_settings() {
     '#default_value' => $rss_config->get('rss_description'),
     '#description' => t('Description of your site, included in each feed.')
   );
-  $form['rss_limit'] = array(
-    '#type' => 'select',
-    '#title' => t('Number of items in each feed'),
-    '#default_value' => $rss_config->get('rss_limit'),
-    '#options' => backdrop_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30)),
-    '#description' => t('Default number of items to include in each feed.')
-  );
-  $form['rss_viewmode'] = array(
-    '#type' => 'select',
-    '#title' => t('Feed content'),
-    '#default_value' => $rss_config->get('rss_viewmode'),
-    '#options' => array(
-      'title' => t('Titles only'),
-      'teaser' => t('Titles plus teaser'),
-      'fulltext' => t('Full text'),
-    ),
-    '#description' => t('Global setting for the default display of content items in each feed.')
-  );
 
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit'] = array(
@@ -1939,8 +1915,6 @@ function system_rss_feeds_settings() {
 function system_rss_feeds_settings_submit($form, &$form_state) {
   $config = config('system.core');
   $config->set('rss_description', $form_state['values']['rss_description']);
-  $config->set('rss_limit', $form_state['values']['rss_limit']);
-  $config->set('rss_viewmode', $form_state['values']['rss_viewmode']);
   $config->save();
   backdrop_set_message(t('The configuration options have been saved.'));
 }
