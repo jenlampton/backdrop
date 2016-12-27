@@ -1732,6 +1732,33 @@ function template_preprocess_menu_tree(&$variables) {
  * @see template_preprocess_menu_tree()
  * @ingroup themeable
  */
+function theme_menu_toggle($variables) {
+  $output = '';
+  if ($variables['enabled']) {
+    $output .= '<input id="main-menu-state" type="checkbox" />';
+    $output .= '<label class="main-menu-btn" for="main-menu-state">';
+    $output .= '  <span class="main-menu-btn-icon"></span>' . t('Menu');
+    $output .= '</label>';
+  }
+
+  return $output;
+}
+
+/**
+ * Returns HTML for a wrapper for a menu tree.
+ *
+ * Note that this may be called multiple times for rendering a menu and its
+ * children if showing multiple levels of depth.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - attributes: Since 1.5.0. Attributes to be added to this menu tree.
+ *   - depth: Since 1.5.0. The menu level depth. Will be 0 for the first level.
+ *   - tree: An HTML string containing the tree's items.
+ *
+ * @see template_preprocess_menu_tree()
+ * @ingroup themeable
+ */
 function theme_menu_tree($variables) {
   return '<ul ' . backdrop_attributes($variables['attributes']) . '>' . $variables['tree'] . '</ul>';
 }

@@ -171,6 +171,7 @@ function system_menu_block_build(array $config) {
       $data['content']['#attached']['library'][] = array('system', 'backdrop.menus');
       if ($config['style'] === 'dropdown') {
         $data['content']['#attached']['library'][] = array('system', 'smartmenus');
+        $data['content']['#prefix'] = theme('menu_toggle', array('enabled' => $config['menu_toggle']));
       }
     }
     if (!empty($config['menu_toggle']) && ($config['menu_name'] == 'main-menu')) {

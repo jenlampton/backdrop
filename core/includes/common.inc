@@ -7537,6 +7537,9 @@ function backdrop_common_theme() {
     'menu_link' => array(
       'render element' => 'element',
     ),
+    'menu_toggle' => array(
+      'variables' => array('enabled' => TRUE),
+    ),
     'menu_tree' => array(
       'render element' => 'tree',
     ),
