@@ -504,9 +504,9 @@ function system_modules($form, $form_state = array()) {
   );
   $form['filter']['search'] = array(
     '#type' => 'textfield',
-    '#title' => t('Filter'),
+    '#title' => t('Keyword'),
     '#size' => 30,
-    '#placeholder' => t('Enter module name…'),
+    '#placeholder' => t('Search...'),
     '#attributes' => array(
       'class' => array('table-filter-text'),
       'autocomplete' => 'off',
@@ -518,41 +518,62 @@ function system_modules($form, $form_state = array()) {
   // Get current list of modules.
   $files = system_rebuild_module_data();
 
-  // Remove hidden modules from display list.
-  //Build tag list
   $visible_files = $files;
   $all_tags = array();
   foreach ($visible_files as $filename => $file) {
-    if (!empty($file->info['hidden'])) {
+    // Remove hidden and required modules from display list.
+    if (!empty($file->info['hidden'] || !empty($file->info['required']))) {
       unset($visible_files[$filename]);
     }
-    if (isset($file->info['tags'])) {
-      $all_tags = array_merge($all_tags, $file->info['tags']);
+    else {
+      // Build tag list.
+      $module_tags = array();
+      if (isset($file->info['tags'])) {
+        $module_tags = $file->info['tags'];
+      }
+      // Include packages in tag list.
+      if (isset($file->info['package'])) {
+        $module_tags[] = $file->info['package'];
+      }
+
+      if (!empty($module_tags)) {
+        $all_tags = array_merge($all_tags, $module_tags);
+      }
+      else {
+        $all_tags = array_merge($all_tags, array('other' => t('Other')));
+      }
     }
   }
-  
-  // Add list of available tags to js
+
+  // Generate a list of available tags.
   $tags = array();
   foreach ($all_tags as $tag) {
-    $tags[$tag] = $tag;
+    $tagname = strtolower($tag);
+    $tags[$tagname] = $tag;
   }
   asort($tags);
-  $tags = array('All' => 'All tags') + $tags;
+  $tags = array('' => '- Any -') + $tags;
 
+  // Add tags filter.
   $form['filter']['tags'] = array(
     '#type' => 'select',
-    '#title' => t('Search by tags'),
+    '#title' => t('Tag'),
     '#options' => $tags,
+    '#default_value' => array(''),
+    '#attributes' => array('data-filter-tags' => 'tags')
   );
 
-  $form['filter']['core_switch'] = array(
+  // Add core/contrib filter.
+  $form['filter']['source'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('Show the following modules'),
+    '#title' => t('Module source'),
     '#default_value' => array('core', 'contrib'),
     '#options' => array(
-      'core' => 'Core',
-      'contrib' => 'Contrib',
+      'core' => 'Backdrop core',
+      'contrib' => 'Contributed projects',
     ),
+    'core' => array('#attributes' => array('data-filter-source' => 'core')),
+    'contrib' => array('#attributes' => array('data-filter-source' => 'contrib')),
   );
 
   uasort($visible_files, 'system_sort_modules_by_info_name');
@@ -666,16 +687,15 @@ function system_modules($form, $form_state = array()) {
         }
       }
     }
-    $form['modules'][$filename] = _system_modules_build_row($module->info, $extra);
+    $form['modules'][$module->info['package']][$filename] = _system_modules_build_row($module->info, $extra);
   }
-  // Lastly, sort all fieldsets by title.
-  // backdrop_sort($form['modules'], array($filename => SORT_STRING));
-  
+
   // Add basic information to the fieldsets.
-    $form['modules'] += array(
-      '#type' => 'container',
-      // '#title' => t('mods'),
-      // '#collapsible' => TRUE,
+  foreach (element_children($form['modules']) as $package) {
+    $form['modules'][$package] += array(
+      '#type' => 'fieldset',
+      '#title' => t($package),
+      '#collapsible' => TRUE,
       '#theme' => 'system_modules_fieldset',
       '#header' => array(
         array('class' => array('checkbox')),
@@ -685,6 +705,7 @@ function system_modules($form, $form_state = array()) {
         array('data' => t('Operations')),
       ),
     );
+  }
 
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
@@ -692,7 +713,7 @@ function system_modules($form, $form_state = array()) {
     '#value' => t('Save configuration'),
   );
   $form['#action'] = url('admin/modules/list/confirm');
-  
+
   return $form;
 }
 
@@ -720,6 +741,20 @@ function system_sort_themes($a, $b) {
  * Build a table row for the system modules page.
  */
 function _system_modules_build_row($info, $extra) {
+  // Prepare tag list by assureing all are lower case.
+  $tags = array();
+  if (isset($info['tags'])) {
+    foreach ($info['tags'] as $tag) {
+      $tags[] = $tag;
+    }
+  }
+  if (isset($info['package'])) {
+    $tags[] = $info['package'];
+  }
+  if (empty($tags)) {
+    $tags[] = 'Other';
+  }
+
   // Add in the defaults.
   $extra += array(
     'requires' => array(),
@@ -742,19 +777,11 @@ function _system_modules_build_row($info, $extra) {
   $form['version'] = array(
     '#markup' => $info['version'],
   );
-  $tags = array();
-  if(isset($info['tags'])) {
-    $tags = $info['tags'];
-  }
-  elseif(isset($info['package'])) {
-    $tags[] = $info['package'];
-  }
-  else {
-    $tags[] = 'Other'; 
-  }
   $form['tags'] = array(
     '#markup' => implode(', ', $tags),
   );
+
+  $form['core'] = $extra['core'];
   $form['#requires'] = $extra['requires'];
   $form['#required_by'] = $extra['required_by'];
   $form['#required_by_distribution'] = $extra['required_by_distribution'];
