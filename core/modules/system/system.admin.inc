@@ -604,7 +604,7 @@ function system_modules($form, $form_state = array()) {
       $extra['required_by'][] = $module->info['explanation'];
     }
 
-    // Check to see if this is a core/contrib/custom.
+    // Check to see if this is a core/contrib/custom module.
     if (strstr($module->uri, 'core/modules')) {
       $extra['core'] = TRUE;
     }
