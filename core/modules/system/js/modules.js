@@ -41,6 +41,7 @@ Backdrop.behaviors.moduleFilter = {
       var tag = $('select[data-filter-tags]').val();
       var core = $('input[data-filter-source="core"]').is(":checked");
       var contrib = $('input[data-filter-source="contrib"]').is(":checked");
+      var custom = $('input[data-filter-source="custom"]').is(":checked");
 
       function showModuleRow(index, row) {
         var $row = $(row);
@@ -74,13 +75,16 @@ Backdrop.behaviors.moduleFilter = {
         if ($row.hasClass('contrib') && contrib) {
           sourceMatch = true;
         }
+        if ($row.hasClass('custom') && custom) {
+          sourceMatch = true;
+        }
 
         // If the row contains the string or the fieldset does, show the row.
         $row.closest('tr').toggle((rowMatch || fieldsetTitleMatch) && tagMatch && sourceMatch);
       }
 
       // Filter only if the length of the search query is at least 2 characters.
-      if (query.length >= 2 || tag || !core || !contrib) {
+      if (query.length >= 2 || tag || !core || !contrib || !custom) {
         $('#edit-target').on('change', function() {
           $rows.each(showModuleRow);
         });

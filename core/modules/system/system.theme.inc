@@ -146,8 +146,7 @@ function theme_system_modules_fieldset($variables) {
 
   // Individual table headers.
   $rows = array();
-  // Iterate through all the modules, which are
-  // children of this fieldset.
+  // Iterate through all the modules, which are children of this fieldset.
   foreach (element_children($form) as $key) {
     // Stick the key into $module for easier access.
     $module = $form[$key];
@@ -195,11 +194,15 @@ function theme_system_modules_fieldset($variables) {
 
     // Hide modules that can't be disabled at all.
     if (!$module["#required_by_distribution"]) {
-      $classes = array('contrib');
       if ($module['core'] == TRUE) {
         $classes = array('core');
       }
-
+      elseif ($module['contrib'] == TRUE) {
+        $classes = array('contrib');
+      }
+      else {
+        $classes = array('custom');
+      }
       $rows[] = array('data' => $row, 'class' => $classes);
     }
   }

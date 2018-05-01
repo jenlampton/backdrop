@@ -563,17 +563,19 @@ function system_modules($form, $form_state = array()) {
     '#attributes' => array('data-filter-tags' => 'tags')
   );
 
-  // Add core/contrib filter.
+  // Add core/contrib/custom filter.
   $form['filter']['source'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Module source'),
-    '#default_value' => array('core', 'contrib'),
+    '#default_value' => array('core', 'contrib', 'custom'),
     '#options' => array(
       'core' => 'Backdrop core',
       'contrib' => 'Contributed projects',
+      'custom' => 'Custom modules',
     ),
     'core' => array('#attributes' => array('data-filter-source' => 'core')),
     'contrib' => array('#attributes' => array('data-filter-source' => 'contrib')),
+    'custom' => array('#attributes' => array('data-filter-source' => 'custom')),
   );
 
   uasort($visible_files, 'system_sort_modules_by_info_name');
@@ -602,9 +604,15 @@ function system_modules($form, $form_state = array()) {
       $extra['required_by'][] = $module->info['explanation'];
     }
 
-    // Check to see if this is a core module.
+    // Check to see if this is a core/contrib/custom.
     if (strstr($module->uri, 'core/modules')) {
       $extra['core'] = TRUE;
+    }
+    elseif (!$module->info['project'] && !$module->info['version'] && !$module->info['timestamp']) {
+      $extra['custom'] = TRUE;
+    }
+    else {
+      $extra['contrib'] = TRUE;
     }
 
     // Some modules are always required by core and cannot be disabled, for
@@ -763,6 +771,8 @@ function _system_modules_build_row($info, $extra) {
     'enabled' => FALSE,
     'links' => array(),
     'core' => FALSE,
+    'contrib' => FALSE,
+    'custom' => FALSE,
   );
   $form = array(
     '#tree' => TRUE,
@@ -782,6 +792,8 @@ function _system_modules_build_row($info, $extra) {
   );
 
   $form['core'] = $extra['core'];
+  $form['contrib'] = $extra['contrib'];
+  $form['custom'] = $extra['custom'];
   $form['#requires'] = $extra['requires'];
   $form['#required_by'] = $extra['required_by'];
   $form['#required_by_distribution'] = $extra['required_by_distribution'];
@@ -815,8 +827,8 @@ function _system_modules_build_row($info, $extra) {
     $status_long .= t('This module requires PHP version @php_required and is incompatible with PHP version !php_version.', array('@php_required' => $php_required, '!php_version' => phpversion())) . ' ';
   }
 
-  // If this module is compatible, present a checkbox indicating this module
-  // may be installed. Otherwise, show a big red X.
+  // If this module is compatible, present a checkbox indicating this module may
+  // be installed. Otherwise, show a big red X.
   if ($compatible) {
     $form['enable'] = array(
       '#type' => 'checkbox',
