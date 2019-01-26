@@ -645,6 +645,9 @@ function update_get_update_list() {
 
   $modules = backdrop_get_installed_schema_version(NULL, FALSE, TRUE);
   foreach ($modules as $module => $schema_version) {
+    $module_info = system_get_info('module', $module);
+    // Get the human-readable name of the module if available.
+    $module_name = $module_info ? $module_info['name'] : $module;
     // Skip uninstalled and incompatible modules.
     if ($schema_version == SCHEMA_UNINSTALLED || update_check_incompatibility($module)) {
       continue;
@@ -652,7 +655,7 @@ function update_get_update_list() {
     // Otherwise, get the list of updates defined by this module.
     $updates = backdrop_get_schema_versions($module);
     if ($updates !== FALSE) {
-      // module_invoke returns NULL for nonexisting hooks, so if no updates
+      // module_invoke() returns NULL for nonexisting hooks, so if no updates
       // are removed, it will == 0.
       $last_removed = module_invoke($module, 'update_last_removed');
       // A last removed schema version of "7xxx" should consider "1xxx" updates
@@ -663,9 +666,10 @@ function update_get_update_list() {
         $comparison_schema_version += 7000;
       }
       if ($comparison_schema_version < $last_removed) {
-        $warning = t('The @module module has a schema version of @version. Updates up to and including @removed are missing. First, <a href="https://backdropcms.org/upgrade">update</a> to the most recent version of @module module where update @removed is available. Then, try this update again.');
+        $ret[$module]['name'] = $module_name;
+        $warning = t('The %module module has a schema version of @version. Updates up to and including @removed are missing. First, <a href="https://backdropcms.org/upgrade">update</a> to the most recent version of the %module module where update @removed is available. Then, try this update again.');
         $ret[$module]['warning'] = t($warning, array(
-          '@module' => $module,
+          '%module' => $module_name,
           '@version' => $schema_version,
           '@removed' => $last_removed,
         ));
@@ -689,6 +693,7 @@ function update_get_update_list() {
           $func = new ReflectionFunction($module . '_update_' . $update);
           $description = str_replace(array("\n", '*', '/'), '', $func->getDocComment());
           $ret[$module]['pending'][$update] = $update . ' - ' . trim($description);
+          $ret[$module]['name'] = $module_name;
           if (!isset($ret[$module]['start'])) {
             $ret[$module]['start'] = $update;
           }
