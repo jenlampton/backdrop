@@ -42,11 +42,14 @@ function layout_list_page() {
       $row[] = '';
       $row[] = '';
     }
+    $help = '';
     if (count($operations['#links']) !== 0) {
-      $row[] = backdrop_render($operations);
+      $text = t('The first layout that matches all visibility conditions will be used. Use this option to change the order of the layouts for...');
+      $help = theme('tooltip', array('text' => $text));
+      $row[] = backdrop_render($operations) . $help;
     }
     else {
-      $row[] = '';
+      $row[] = $help;
     }
     $rows[] = array('data' => $row, 'class' => array('layout-group'));
 

@@ -7655,6 +7655,9 @@ function backdrop_common_theme() {
     'help' => array(
       'variables' => array('markup' => NULL),
     ),
+    'tooltip' => array(
+      'variables' => array('text' => NULL),
+    ),
     'table' => array(
       'variables' => array('header' => NULL, 'rows' => NULL, 'attributes' => array(), 'caption' => NULL, 'colgroups' => array(), 'sticky' => TRUE, 'empty' => ''),
     ),

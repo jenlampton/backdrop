@@ -2400,6 +2400,13 @@ function theme_help($variables) {
 }
 
 /**
+ * Returns HTML for a tooltip element.
+ */
+function theme_tooltip($variables) {
+  return '<a class="tooltip" href="#" title="' . $variables['text'] . '">?</a>';
+}
+
+/**
  * Returns HTML for a "more help" link.
  *
  * @param $variables
