@@ -150,6 +150,9 @@ class DashboardWelcomeBlock extends Block {
     $html_links = array();
     foreach ($links as $path => $label) {
       if (url_is_external($path) || $path === '<front>') {
+        if ($path !== '<front>') {
+          $label .= '<span class="external"></span>';
+        }
         $access = TRUE;
       }
       else {
