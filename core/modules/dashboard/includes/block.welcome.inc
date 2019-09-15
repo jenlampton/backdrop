@@ -49,9 +49,17 @@ class DashboardWelcomeBlock extends Block {
     $links_col1 = array();
     $links_col1['<front>'] = t('View the home page');
     $links_col1['admin/config/system/site-information'] = t('Add a logo, or change the site name');
-    $default_theme = config_get('system.core', 'theme_default', $theme);
-    if ($default_theme == 'basis' && module_exists('color')) {
-      $links_col1['admin/appearance/settings/basis'] = t('Change the colors for the current theme');
+    $default_theme = config_get('system.core', 'theme_default');
+    if (theme_has_settings($default_theme)) {
+      $themes = list_themes();
+      $color_support = $themes[$default_theme]->info['settings']['color'];
+      if (module_exists('color') && $color_support) {
+        $theme_link_label = t('Change the current theme\'s settings and colors');
+      }
+      else {
+        $theme_link_label = t('Change the current theme\'s settings');
+      }
+      $links_col1['admin/appearance/settings/' . $default_theme] = $theme_link_label;
     }
     $links_col1['admin/appearance/install'] = t('Find a new theme for your site');
     $links_col1 = $this->filterAvailableLinks($links_col1);
@@ -77,8 +85,14 @@ class DashboardWelcomeBlock extends Block {
     if ($about_node) {
       $links_col2['node/2/edit'] = t('Edit the %title page', array('%title' => $about_node->title));
     }
-    $links_col2['node/add/post'] = t('Create a new post');
-    $links_col2['admin/structure/menu/manage/main-menu'] = t('Update the Primary navigation');
+    $node_types = node_type_get_types();
+    if (isset($node_types['post'])) {
+      $links_col2['node/add/post'] = t('Create a new @post_label', array('@post_label' => strtolower($node_types['post']->name)));
+    }
+    $system_menus = menu_list_system_menus();
+    if (isset($system_menus['main-menu'])) {
+      $links_col2['admin/structure/menu/manage/main-menu'] = t('Edit the links of the %menu_name menu', array('%menu_name' => $system_menus['main-menu']));
+    }
     $links_col2['admin/structure/layouts/manage/home'] = t('Modify the layout of your home page');
     $links_col2 = $this->filterAvailableLinks($links_col2);
 
