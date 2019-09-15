@@ -497,6 +497,18 @@ tr:hover del.diffchange {
 }
 
 /**
+ * External link indicators.
+ */
+span.external {
+  display: inline-block;
+  margin-left: .33em;
+  width: 1em;
+  height: 1em;
+  background: transparent url(../../../misc/external-link-blue-32.png) bottom left;
+  background-size: 1em;
+}
+
+/**
  * Floated images.
  */
 img {
