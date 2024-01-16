@@ -319,6 +319,16 @@ Backdrop.ajax.prototype.eventResponse = function (element, event) {
   var ajax = this;
 
   try {
+    // Here we can protect both ajaxForm and ajaxSubmit.
+    if (typeof $.parseJSON !== 'function') {
+      $.parseJSON = function (jsonString) {
+        try {
+          return JSON.parse(jsonString);
+        } catch (error) {
+          throw new Error('Failed to parse JSON');
+        }
+      };
+    }
     if (ajax.form) {
       // If setClick is set, we must set this to ensure that the button's
       // value is passed.
