@@ -3204,7 +3204,7 @@ function layout_ajax_form_save_dialog($form, $form_state) {
 /**
  * AJAX handler that updates the title.
  *
- * return array
+ * @return array
  *   AJAX commands to update the page.
  */
 function layout_ajax_form_save_title_dialog($form, $form_state) {
