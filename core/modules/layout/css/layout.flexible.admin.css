@@ -21,6 +21,7 @@
 
 .layout--flexible .layout-editor-block {
   box-shadow: none;
+  cursor: row-resize;
 }
 .layout--flexible .layout-editor-block-title {
   padding: 0.4em 1em;
@@ -30,7 +31,7 @@
   font-weight: bold;
 }
 .layout--flexible .layout-editor-block-content p {
-  color: black;
+  color: #000;
 }
 
 .layout-flexible-region-top .buttons {
@@ -42,7 +43,7 @@
   border: 1px solid #ccc;
   margin-bottom: 15px;
   border-radius: 4px;
-  cursor: move;
+  cursor: row-resize;
   box-shadow: 2px 2px 0 0 #d0d0d0;
   background: #f7f7f7;
 }
@@ -66,9 +67,6 @@
   text-align: center;
 }
 
-.l-flexible-row .layout-editor-region {
-  border: 1px solid white;
-}
 .l-content #layout-flexible-content {
-  background-color: white;
+  background-color: #fff;
 }
