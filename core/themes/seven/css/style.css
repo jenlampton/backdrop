@@ -1324,7 +1324,8 @@ div.filter-options select {
 /**
  * Layout configuration.
  */
-#layout-edit-main {
+#layout-edit-main,
+#layout-flexible-content {
   padding: 20px 0 0;
   border-radius: 4px;
   background-color: #f7f7f7;

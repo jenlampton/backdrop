@@ -2,6 +2,13 @@
  * Flexible template admin css.
  */
 
+#layout-flexible-edit-main {
+  padding-top: 15px;
+  margin: 0 15px;
+  border: 1px dashed #ccc;
+  background: #fff;
+}
+
 .layout-flexible-region-top .label {
   display: inline-block;
   margin: 0;
@@ -13,6 +20,10 @@
 }
 [dir="rtl"] .layout-flexible-region-top .label {
   padding: 4px 0 4px 12px;
+}
+
+.flexible-row .layout-editor-region {
+  border: 1px solid #EAEAEA;
 }
 
 .flexible-row .layout-editor-region-title .label {
@@ -65,8 +76,4 @@
   color: #fff;
   background-clip: content-box;
   text-align: center;
-}
-
-.l-content #layout-flexible-content {
-  background-color: #fff;
 }
