@@ -2403,6 +2403,51 @@ class FileUploadWizardTestCase extends FileTestHelper {
   }
 
   /**
+   * Test the file upload wizard when uploading a private file fails.
+   */
+  function testFileUploadWizardPrivateFailure() {
+    $test_file = $this->getTestFile('text');
+
+    // Record the last saved file ID.
+    $previous_last_fid = $this->getLastFileId();
+
+    // Enable the private file system.
+    config_set('system.core', 'file_private_path', $this->private_files_directory);
+
+    // Step 1: Upload a basic document file.
+    $edit = array();
+    $edit['files[upload]'] = backdrop_realpath($test_file->uri);
+    $this->backdropPost('file/add', $edit, t('Next'));
+
+    // After the file is uploaded but before the file is saved to its final
+    // location, update the private files directory to an non-writable location.
+    $temp_private_location = $this->temp_files_directory . '/private-locked';
+    config_set('system.core', 'file_private_path', $temp_private_location);
+    backdrop_mkdir($temp_private_location);
+    file_save_htaccess('private://', TRUE);
+    backdrop_chmod($temp_private_location, 444);
+
+    // Step 3: Scheme selection.
+    $edit = array();
+    $edit['scheme'] = 'private';
+    $this->backdropPost(NULL, $edit, t('Next'));
+
+    // Check that the failed-upload file entity has been deleted by checking
+    // that the latest file ID is still the same as before the upload attempt.
+    $last_fid = $this->getLastFileId();
+    $this->assertTrue($previous_last_fid == $last_fid, 'No new file entity created when file fails to upload.');
+
+    // Check that a message was printed indicating the file was not saved.
+    $this->assertRaw(t('@type %name was not saved.', array('@type' => 'Document', '%name' => $test_file->filename)), 'Failed private upload was deleted.');
+
+    // Restore write permissions to the temporarily created private directory
+    // so that it can be cleaned up.
+    backdrop_chmod($temp_private_location, 0775);
+    backdrop_chmod('private://.htaccess', 0664);
+    file_unmanaged_delete('private://.htaccess');
+  }
+
+  /**
    * Test the file upload wizard field step.
    */
   function testFileUploadWizardFields() {

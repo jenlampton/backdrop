@@ -336,6 +336,15 @@ function file_add_form_submit($form, &$form_state) {
   if ($save) {
     $file = file_load($form_state['storage']['upload']);
     if ($file) {
+      $file->type = $form_state['storage']['type'];
+      $file->display = TRUE;
+
+      // Save the form fields.
+      // Keep in mind that the values for the Field API fields must be in
+      // $form_state['values'] and not in ['storage']. This is true as long as
+      // the fields are on the last page of the multi step form.
+      entity_form_submit_build_entity('file', $file, $form, $form_state);
+
       if (file_uri_scheme($file->uri) != $form_state['storage']['scheme']) {
         $file_destination = $form_state['storage']['scheme'] . '://' . file_uri_target($file->uri);
         $file_destination = file_stream_wrapper_uri_normalize($file_destination);
@@ -345,7 +354,14 @@ function file_add_form_submit($form, &$form_state) {
         if ($moved_file = file_move($file, $file_destination, FILE_EXISTS_RENAME)) {
           // Only re-assign the file object if file_move() did not fail.
           $file = $moved_file;
+          $file_in_final_location = TRUE;
         }
+        else {
+          $file_in_final_location = FALSE;
+        }
+      }
+      else {
+        $file_in_final_location = TRUE;
       }
 
       $substitutions = array(
@@ -353,19 +369,10 @@ function file_add_form_submit($form, &$form_state) {
         '%name' => $file->filename,
       );
 
-      // Only save the file if the move completed.
-      if ($moved_file){
-        $file->type = $form_state['storage']['type'];
-        $file->display = TRUE;
-
+      // Only save the file if any necessary move was successful.
+      if ($file_in_final_location) {
         // Change the file from temporary to permanent.
         $file->status = FILE_STATUS_PERMANENT;
-
-        // Save the form fields.
-        // Keep in mind that the values for the Field API fields must be in
-        // $form_state['values'] and not in ['storage']. This is true as long as
-        // the fields are on the last page of the multi step form.
-        entity_form_submit_build_entity('file', $file, $form, $form_state);
 
         file_save($file);
         // Record that the module (in this case, the File module) is using the
