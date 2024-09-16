@@ -2422,7 +2422,8 @@ class FileUploadWizardTestCase extends FileTestHelper {
     // After the file is uploaded but before the file is saved to its final
     // location, update the private files directory to an non-writable location.
     // The /root directory is the home directory of the root user, and should
-    // never be writable by the web user.
+    // never be writable by the web user. As long as the directory either does
+    // not exist, or is not writable, this example should work.
     $temp_private_location = '/root';
     config_set('system.core', 'file_private_path', $temp_private_location);
 
