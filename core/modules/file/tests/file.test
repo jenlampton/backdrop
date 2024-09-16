@@ -2427,18 +2427,27 @@ class FileUploadWizardTestCase extends FileTestHelper {
     $temp_private_location = '/root';
     config_set('system.core', 'file_private_path', $temp_private_location);
 
+    // Now the file is in a temporary location. Load its entity.
+    $new_fid = $this->getLastFileId();
+    $new_file = file_load($new_fid);
+    $this->assertTrue(file_exists($new_file->uri), 'File is temporarily uploaded.');
+
     // Step 3: Scheme selection.
     $edit = array();
     $edit['scheme'] = 'private';
     $this->backdropPost(NULL, $edit, t('Next'));
 
-    // Check that the failed-upload file entity has been deleted by checking
-    // that the latest file ID is still the same as before the upload attempt.
-    $last_fid = $this->getLastFileId();
-    $this->assertTrue($previous_last_fid == $last_fid, 'No new file entity created when file fails to upload.');
-
     // Check that a message was printed indicating the file was not saved.
     $this->assertRaw(t('@type %name was not saved.', array('@type' => 'Document', '%name' => $test_file->filename)), 'Failed private upload was deleted.');
+
+    // Check that the file is no longer on disk.
+    clearstatcache($new_file->uri);
+    $this->assertFalse(file_exists($new_file->uri), 'Temporary file on disk has been deleted.');
+
+    // Check that the file entity was deleted.
+    $last_fid = $this->getLastFileId();
+    $this->assertTrue($previous_last_fid == $last_fid, 'Latest file entity remains the same.');
+    $this->assertFalse($new_fid == $last_fid, 'New file entity was deleted when file fails to upload.');
 
     // Reset the private file path so the testing framework doesn't try to
     // clean up the non-writable directory.
