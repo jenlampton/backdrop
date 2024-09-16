@@ -2425,7 +2425,7 @@ class FileUploadWizardTestCase extends FileTestHelper {
     config_set('system.core', 'file_private_path', $temp_private_location);
     backdrop_mkdir($temp_private_location);
     file_save_htaccess('private://', TRUE);
-    backdrop_chmod($temp_private_location, 444);
+    backdrop_chmod($temp_private_location, 0444);
 
     // Step 3: Scheme selection.
     $edit = array();
