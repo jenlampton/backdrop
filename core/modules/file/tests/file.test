@@ -107,8 +107,8 @@ class FileTestHelper extends BackdropWebTestCase {
       $file->type = FILE_TYPE_NONE;
     }
 
-    // If the file isn't already assigned a real type, determine what type should
-    // be assigned to it.
+    // If the file isn't already assigned a real type, determine what type
+    // should be assigned to it.
     if ($file->type === FILE_TYPE_NONE) {
       $type = file_get_type($file);
       if (isset($type)) {
@@ -365,7 +365,10 @@ class FileTestHelper extends BackdropWebTestCase {
    *   Message to display.
    */
   function assertFileExists($file, $message = NULL) {
-    $message = isset($message) ? $message : format_string('File %file exists on the disk.', array('%file' => $file->uri));
+    if (!isset($message) {
+      $string = 'File %file exists on the disk.';
+      $message = format_string($string, array('%file' => $file->uri));
+    }
     $this->assertTrue(is_file($file->uri), $message);
   }
 
@@ -380,7 +383,10 @@ class FileTestHelper extends BackdropWebTestCase {
   function assertFileEntryExists($file, $message = NULL) {
     entity_get_controller('file')->resetCache();
     $db_file = file_load($file->fid);
-    $message = isset($message) ? $message : format_string('File %file exists in database at the correct path.', array('%file' => $file->uri));
+    if (!isset($message) {
+      $string = 'File %file exists in database at the correct path.';
+      $message = format_string($string, array('%file' => $file->uri));
+    }
     $this->assertEqual($db_file->uri, $file->uri, $message);
   }
 
@@ -393,7 +399,10 @@ class FileTestHelper extends BackdropWebTestCase {
    *   Message to display.
    */
   function assertFileNotExists($file, $message = NULL) {
-    $message = isset($message) ? $message : format_string('File %file exists on the disk.', array('%file' => $file->uri));
+    if (!isset($message) {
+      $string = 'File %file exists on the disk.';
+      $message = format_string($string, array('%file' => $file->uri));
+    }
     $this->assertFalse(is_file($file->uri), $message);
   }
 
@@ -407,7 +416,10 @@ class FileTestHelper extends BackdropWebTestCase {
    */
   function assertFileEntryNotExists($file, $message) {
     entity_get_controller('file')->resetCache();
-    $message = isset($message) ? $message : format_string('File %file exists in database at the correct path.', array('%file' => $file->uri));
+    if (!isset($message) {
+      $string = 'File %file exists in database at the correct path.';
+      $message = format_string($string, array('%file' => $file->uri));
+
     $this->assertFalse(file_load($file->fid), $message);
   }
 
@@ -420,7 +432,10 @@ class FileTestHelper extends BackdropWebTestCase {
    *   Message to display.
    */
   function assertFileIsPermanent($file, $message = NULL) {
-    $message = isset($message) ? $message : format_string('File %file is permanent.', array('%file' => $file->uri));
+    if (!isset($message) {
+      $string = 'File %file is permanent.';
+      $message = format_string($string, array('%file' => $file->uri));
+    }
     $this->assertTrue($file->status == FILE_STATUS_PERMANENT, $message);
   }
 
@@ -459,7 +474,14 @@ class FileTaxonomyTermTestCase extends BackdropWebTestCase {
     $modules[] = 'file';
     $modules[] = 'taxonomy';
     parent::setUp($modules);
-    $this->admin_user = $this->backdropCreateUser(array('access content', 'access administration pages', 'administer site configuration', 'administer taxonomy'));
+    $this->admin_user = $this->backdropCreateUser(
+      array(
+        'access content',
+        'access administration pages',
+        'administer site configuration',
+        'administer taxonomy',
+      ),
+    );
     $this->backdropLogin($this->admin_user);
   }
 
@@ -893,7 +915,7 @@ class FileFieldWidgetTestCase extends FileTestHelper {
       $error_message = t('Only files with the following extensions are allowed: %files-allowed.', array('%files-allowed' => 'txt'));
       $this->assertRaw($error_message, t('Validation error when file with wrong extension uploaded (JSMode=%type).', array('%type' => $type)));
 
-      // Upload file with correct extension, check that error message is removed.
+      // Upload file with correct extension, check that error message is gone.
       $edit[$name] = backdrop_realpath($test_file_text->uri);
       switch ($type) {
         case 'nojs':
@@ -928,8 +950,8 @@ class FileFieldWidgetTestCase extends FileTestHelper {
 
     $test_file = $this->getTestFile('text');
     foreach (array('nojs', 'js') as $type) {
-      // Create a temporary file owned by the anonymous victim user. This will be
-      // as if they had uploaded the file, but not saved the node they were
+      // Create a temporary file owned by the anonymous victim user. This will
+      // be as if they had uploaded the file, but not saved the node they were
       // editing or creating.
       $victim_tmp_file = $this->createTemporaryFile('some text', $victim_uid);
       $victim_tmp_file = file_load($victim_tmp_file->fid);
@@ -1004,8 +1026,8 @@ class FileFieldWidgetTestCase extends FileTestHelper {
       // until after the 3rd file, and after that, isn't displayed. Because
       // SimpleTest triggers the last button with a given name, so upload to the
       // second field first.
-      // @todo This is only testing a non-Ajax upload, because backdropPostAJAX()
-      //   does not yet emulate jQuery's file upload.
+      // @todo This is only testing a non-Ajax upload, because
+      // backdropPostAJAX() does not yet emulate jQuery's file upload.
       //
       $this->backdropGet("node/add/$type_name");
       foreach (array($field_name2, $field_name) as $each_field_name) {
@@ -1023,11 +1045,11 @@ class FileFieldWidgetTestCase extends FileTestHelper {
       foreach (array($field_name, $field_name2) as $current_field_name) {
         // How many uploaded files for the current field are remaining.
         $remaining = 3;
-        // Test clicking each "Remove" button. For extra robustness, test them out
-        // of sequential order. They are 0-indexed, and get renumbered after each
-        // iteration, so array(1, 1, 0) means:
+        // Test clicking each "Remove" button. For extra robustness, test them
+        // out of sequential order. They are 0-indexed, and get renumbered after
+        // each iteration, so array(1, 1, 0) means:
         // - First remove the 2nd file.
-        // - Then remove what is then the 2nd file (was originally the 3rd file).
+        // - Then remove what is then the 2nd file (originally the 3rd file).
         // - Then remove the first file.
         foreach (array(1,1,0) as $delta) {
           // Ensure we have the expected number of Remove buttons, and that they
@@ -1048,13 +1070,14 @@ class FileFieldWidgetTestCase extends FileTestHelper {
           $button_name = $current_field_name . '_' . LANGUAGE_NONE . '_' . $delta . '_remove_button';
           switch ($type) {
             case 'nojs':
-              // backdropPost() takes a $submit parameter that is the value of the
-              // button whose click we want to emulate. Since we have multiple
-              // buttons with the value "Remove", and want to control which one we
-              // use, we change the value of the other ones to something else.
-              // Since non-clicked buttons aren't included in the submitted POST
-              // data, and since backdropPost() will result in $this being updated
-              // with a newly rebuilt form, this doesn't cause problems.
+              // backdropPost() takes a $submit parameter that is the value of
+              // the button whose click we want to emulate. Since we have
+              // multiple buttons with the value "Remove", and want to control
+              // which one we use, we change the value of the other ones to
+              // something else. Since non-clicked buttons aren't included in
+              // the submitted POST data, and since backdropPost() will result
+              // in $this being updated with a newly rebuilt form, this doesn't
+              // cause problems.
               foreach ($buttons as $button) {
                 if ($button['name'] != $button_name) {
                   $button['value'] = 'DUMMY';
@@ -1071,8 +1094,8 @@ class FileFieldWidgetTestCase extends FileTestHelper {
           $num_expected_remove_buttons--;
           $remaining--;
 
-          // Ensure an "Upload" button for the current field is displayed with the
-          // correct name.
+          // Ensure an "Upload" button for the current field is displayed with
+          // the correct name.
           $upload_button_name = $current_field_name . '_' . LANGUAGE_NONE . '_' . $remaining . '_upload_button';
           $buttons = $this->xpath('//input[@type="submit" and @value="Upload" and @name=:name]', array(':name' => $upload_button_name));
           $this->assertTrue(is_array($buttons) && count($buttons) == 1, format_string('The upload button is displayed with the correct name (JSMode=%type).', array('%type' => $type)));
@@ -1392,7 +1415,8 @@ class FileFieldDisplayTestCase extends FileTestHelper {
     ));
     $this->assertRaw($default_output, 'Default formatter displaying correctly on full node view.');
 
-    // Turn the "display" option off and check that the file is no longer displayed.
+    // Turn the "display" option off and check that the file is no longer
+    // displayed.
     $edit = array($field_name . '[' . LANGUAGE_NONE . '][0][display]' => FALSE);
     $this->backdropPost('node/' . $nid . '/edit', $edit, t('Save'));
 
@@ -2288,7 +2312,7 @@ class FileEditTestCase extends FileTestHelper {
     // Check that the name field is displayed with the correct value.
     $this->assertFieldByName($name_key, $file->filename, t('Name field displayed.'));
 
-    // The user does not have "delete" permissions so no delete button should be found.
+    // The user does not have "delete" permissions so no delete button present.
     $this->assertNoFieldByName('op', t('Delete'), 'Delete button not found.');
 
     // Edit the content of the file.
@@ -2804,7 +2828,7 @@ class FileAdminTestCase extends FileTestHelper {
       $i++;
     }
 
-    // Test that the default sort by file_managed.timestamp DESC actually fires properly.
+    // Test that the default sort by file_managed.timestamp DESC works.
     $files_query = db_select('file_managed', 'fm')
       ->fields('fm', array('fid'))
       ->orderBy('timestamp', 'DESC')
@@ -3099,7 +3123,7 @@ class FileReplaceTestCase extends FileTestHelper {
   }
 
   /**
-   * @todo Test image dimensions for an image field are reset when a file is replaced.
+   * @todo Test image field image dimensions are reset when a file is replaced.
    * @todo Test image styles are cleared when an image is updated.
    */
   function testReplaceFile() {
@@ -3556,7 +3580,7 @@ class FileAccessTestCase extends FileTestHelper {
   }
 
   /**
-   * Test to see if we have access to download private files when granted the permissions.
+   * Test permissions to download private files.
    */
   function testFilePrivateDownloadAccess() {
     foreach ($this->getPrivateDownloadAccessCases() as $case) {
