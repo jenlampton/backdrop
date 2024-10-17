@@ -850,6 +850,9 @@ function system_install() {
   if (valid_email_address($site_mail)) {
     config_set('system.core', 'site_mail', $site_mail);
   }
+
+  // Set the install version to the current version of Backdrop.
+  config_set('system.core', 'initial_version', BACKDROP_VERSION);
 }
 
 /**
@@ -3628,6 +3631,19 @@ function system_update_1097() {
   $config = config('admin_bar.settings');
   if ($config->get('local_action_position') === NULL) {
     $config->set('local_action_position', 'top');
+    $config->save();
+  }
+}
+
+/**
+ * Set the 'initial version' the current version, for pre-existing sites.
+ */
+function system_update_1098() {
+  $config = config('system.core');
+  // Set the initial version to anything lower than 1.30.0.
+  $initial_version = $config->get('initial_version');
+  if (!isset($initial_version)) {
+    $config->set('initial_version', '1.29.0');
     $config->save();
   }
 }

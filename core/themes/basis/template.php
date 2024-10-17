@@ -38,6 +38,15 @@ function basis_preprocess_page(&$variables) {
     $variables['classes'][] = 'view-name-' . $view->name;
   }
 
+  // Add body class for install version.
+  $install_version = config_get('system.core', 'initial_version');
+  if (version_compare($install_version, '1.30.0', '>=')) {
+    $minor_version = preg_replace('/^([0-9.]+)\.0$/', '${1}', $install_version);
+    $css_version = 'installed-' . str_replace('.', '-', $minor_version);
+    //$css_version = backdrop_clean_css_identifier('installed-v' . $minor_version);
+    $variables['classes'][] = $css_version;
+  }
+
   // Add breakpoint-specific CSS for dropdown menus.
   $config = config('menu.settings');
   if ($config->get('menu_breakpoint') == 'custom') {
